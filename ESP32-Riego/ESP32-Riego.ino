@@ -1,12 +1,26 @@
+//Variables para conectarse con Blynk
+#define BLYNK_TEMPLATE_ID "TMPL27CJAET4n"
+#define BLYNK_TEMPLATE_NAME "Sistema de Riego Inteligente"
+#define BLYNK_AUTH_TOKEN "YNdTFGrRzLuzupayV_QwZWq09mMPkFAL"
+
 #include "DHT.h" 
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Wire.h>   // I2C
+#include <WiFi.h>
+#include <WiFiClient.h>
+#include <BlynkSimpleEsp32.h>
 
 #define DHTPIN       23
 #define DHTTYPE      DHT11
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
+
+
+//BlynkTimer timer;
+
+char network[] = "Fibertel WiFi804 2.4GHz";
+char password[] = "00437475146";
 
 const int evPin     = 15;     // Pin de la electroválvula
 float tiempoEv      = 10.0;   // Duración de apertura en segundos
@@ -23,6 +37,7 @@ const unsigned long intervaloRiego = 12UL * 60UL * 60UL * 1000UL; //12 horas en 
 
 void setup() {
   Serial.begin(9600);
+  Blynk.begin(BLYNK_AUTH_TOKEN,network,password);
   dht.begin();
   
   // Pines
@@ -43,6 +58,7 @@ void setup() {
 }
 
 void loop() {
+  Blynk.run();
   float h = dht.readHumidity();
   float t = dht.readTemperature();
   // Leo el sensor cada 10 segundos
@@ -84,6 +100,9 @@ void leerYMostrarSensor() {
   display.setCursor(0, 0);
   display.printf("T:%.1fC\nH:%.1f%%", t, h);
   display.display();
+
+  Blynk.virtualWrite(V0,h);
+  Blynk.virtualWrite(V1,t);
 }
 
 // Arranca el riego
