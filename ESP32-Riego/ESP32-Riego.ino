@@ -17,8 +17,7 @@
 #define SCREEN_HEIGHT 64
 
 
-//BlynkTimer timer;
-
+//Red WIFI
 char network[] = "Fibertel WiFi804 2.4GHz";
 char password[] = "00437475146";
 
@@ -30,6 +29,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 // Variables para manejar riego con millis()
 bool   riegoActivo   = false;
+bool   riegoManual  = false;
 unsigned long inicioRiego = 0;
 unsigned long tiempoUltimoRiego =0;
 const unsigned long intervaloRiego = 12UL * 60UL * 60UL * 1000UL; //12 horas en milisegundos
@@ -70,19 +70,19 @@ void loop() {
     leerYMostrarSensor();
     
     // Si humedad < 40% o temp > 30°C, y pasaron 12 horas del ultimo riego, arranca riego
-    bool debeRegar = (h < 40.0 || t > 16.9); // podés ajustar condiciones
-    if (!riegoActivo && debeRegar && ((ahora - tiempoUltimoRiego) >= intervaloRiego)) {
+    bool debeRegar = (h < 40.0 || t > 30.0);
+
+    if (!riegoActivo && !riegoManual && debeRegar && ((ahora - tiempoUltimoRiego) >= intervaloRiego)) {
     iniciarRiego();
     tiempoUltimoRiego = ahora;
     }
   }
 
   // Si el riego está activo, comprobamos el tiempo transcurrido
-  if (riegoActivo && millis() - inicioRiego >= (unsigned long)(tiempoEv * 1000)) {
+  if (riegoActivo && !riegoManual && millis() - inicioRiego >= (unsigned long)(tiempoEv * 1000)) {
     finalizarRiego();
   }
 
-  // Aquí podrías atender comandos de Blynk u otras tareas  
 }
 
 // Lee DHT y actualiza OLED
@@ -126,4 +126,16 @@ void finalizarRiego() {
   display.display();
   digitalWrite(evPin, LOW);
   riegoActivo = false;
+}
+
+//Control manual del riego desde la app del celular
+BLYNK_WRITE(V2){
+  int estado = param.asInt();
+  if(estado == 1 && !riegoActivo){
+    riegoManual = true;
+    iniciarRiego();
+  }else if (estado == 0 && riegoActivo && riegoManual) {
+    finalizarRiego();
+    riegoManual = false;
+  }
 }
