@@ -34,6 +34,9 @@ Este proyecto implementa un sistema de riego automático basado en microcontrola
 
 ![image](https://github.com/user-attachments/assets/f7e0f946-d818-4c40-8c7f-db3e7db9b75d)
 
+![image](https://github.com/user-attachments/assets/e0e809ed-4ea4-4400-9d06-4eaf9eb5a33f)
+
+
 
 
 
